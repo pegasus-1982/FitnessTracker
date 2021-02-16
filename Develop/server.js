@@ -4,7 +4,7 @@ const mongoose = require("mongoose");
 
 const PORT = process.env.PORT || 3000;
 
-const db = require("..Develop/models");
+const db = require("../Develop/models");
 
 const app = express();
 
@@ -17,16 +17,27 @@ app.use(express.static("public"));
 
 mongoose.connect(process.env.MONGODB_URI || "mongodb://localhost/workout", { useNewUrlParser: true });
 
-db.Workout.create({ name: "Workout Sessions" })
+/* db.Workout.create({ name: "Workout Sessions" })
   .then(dbWorkout => {
     console.log(dbWorkout);
   })
   .catch(({message}) => {
     console.log(message);
-  });
+  }); */
+
+
+app.get("/", (req, res) => {
+  db.Workout.find({})
+    .then(dbWorkout => {
+      res.json(dbWorkout);
+    })
+    .catch(err => {
+      res.json(err);
+    });
+});
 
 app.post("/submit", ({body}, res) => {
-  db.Book.create(body)
+  db.Workout.create(body)
     .then(({day}) => db.Workout.findOneAndUpdate({}, { $push: { day: day } }, { new: true }))
     .then(dbWorkout => {
       res.json(dbWorkout);
@@ -37,9 +48,9 @@ app.post("/submit", ({body}, res) => {
 });
 
 app.get("/workout", (req, res) => {
-  db.Book.find({})
-    .then(dbBook => {
-      res.json(dbBook);
+  db.Workout.find({})
+    .then(dbWorkout => {
+      res.json(dbWorkout);
     })
     .catch(err => {
       res.json(err);
@@ -47,9 +58,9 @@ app.get("/workout", (req, res) => {
 });
 
 app.get("/excercises", (req, res) => {
-  db.Library.find({})
-    .then(dbLibrary => {
-      res.json(dbLibrary);
+  db.Exercise.find({})
+    .then(dbExercise => {
+      res.json(dbExercise);
     })
     .catch(err => {
       res.json(err);
@@ -57,15 +68,18 @@ app.get("/excercises", (req, res) => {
 });
 
 app.get("/populated", (req, res) => {
-  db.Library.find({})
-    .populate("books")
-    .then(dbLibrary => {
-      res.json(dbLibrary);
+  db.Exercise.find({})
+    .populate("Exercise")
+    .then(dbExercise => {
+      res.json(dbExercise);
     })
     .catch(err => {
       res.json(err);
     });
 });
+
+// routes
+app.use(require("./routes/api"));
 
 app.listen(PORT, () => {
   console.log(`App running on port ${PORT}!`);

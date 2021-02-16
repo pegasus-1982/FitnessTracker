@@ -8,39 +8,12 @@ const workOutSchema = new Schema({
     
   },
 
-  type: {
-    type: String,
-    validate: [({ length }) => length <= 50, "50 characters max"]
-    
-  },
-
-  name: {
-    type: String,
-    validate: [({ length }) => length <= 50, "50 characters max"]
-  },
-
-  duration: {
-    type: Number, 
-    
-    min: 0, 
-    max: 59,
-    
-  },
-
-  weight: {
-    type: Number, 
-    
-  },
-
-  reps: {
-    type: Number, 
-    
-  },
-
-  sets: {
-    type: Number, 
-    
-  },
+  excercises: [
+    {
+      type: Schema.Types.ObjectId,
+      ref: "Excercise"
+    }
+  ]
   
 });
 
