@@ -17,16 +17,23 @@ app.use(express.static("public"));
 
 mongoose.connect(process.env.MONGODB_URI || "mongodb://localhost/workout", { useNewUrlParser: true });
 
-/* db.Workout.create({ name: "Workout Sessions" })
-  .then(dbWorkout => {
-    console.log(dbWorkout);
-  })
-  .catch(({message}) => {
-    console.log(message);
-  }); */
-
+// defining the routes to the different html files under public folder
+var path = require("path");
 
 app.get("/", (req, res) => {
+  res.sendFile(path.join(__dirname, "./public/index.html"))
+});
+
+app.get("/exercise", function(req, res) {
+  res.sendFile(path.join(__dirname, "./public/exercise.html"));
+});
+
+app.get("/stats", function(req, res) {
+  res.sendFile(path.join(__dirname, "./public/stats.html"));
+});
+
+// creating api routes
+app.get("/api/workouts", (req, res) => {
   db.Workout.find({})
     .then(dbWorkout => {
       res.json(dbWorkout);
@@ -36,9 +43,8 @@ app.get("/", (req, res) => {
     });
 });
 
-app.post("/submit", ({body}, res) => {
-  db.Workout.create(body)
-    .then(({day}) => db.Workout.findOneAndUpdate({}, { $push: { day: day } }, { new: true }))
+app.post("/api/workouts", (req, res) => {
+  db.Workout.create(req.body)
     .then(dbWorkout => {
       res.json(dbWorkout);
     })
@@ -47,39 +53,27 @@ app.post("/submit", ({body}, res) => {
     });
 });
 
-app.get("/workout", (req, res) => {
-  db.Workout.find({})
-    .then(dbWorkout => {
-      res.json(dbWorkout);
-    })
-    .catch(err => {
-      res.json(err);
-    });
+app.put("/api/workouts/:id", (req, res) => {
+  console.log(req.params.id);
+  console.log(req.body);
+  db.Workout.findByIdAndUpdate(req.params.id, 
+      { $push:{ exercises: req.body} , day: new Date()}, 
+      {
+      new: true
+      })
+      .then(dbWorkout => {
+        console.log(dbWorkout);
+        res.json(dbWorkout);
+      })
+      .catch(err => {
+        res.json(err);
+      });
+
+  
 });
 
-app.get("/excercises", (req, res) => {
-  db.Exercise.find({})
-    .then(dbExercise => {
-      res.json(dbExercise);
-    })
-    .catch(err => {
-      res.json(err);
-    });
-});
 
-app.get("/populated", (req, res) => {
-  db.Exercise.find({})
-    .populate("Exercise")
-    .then(dbExercise => {
-      res.json(dbExercise);
-    })
-    .catch(err => {
-      res.json(err);
-    });
-});
 
-// routes
-app.use(require("./routes/api"));
 
 app.listen(PORT, () => {
   console.log(`App running on port ${PORT}!`);
